@@ -1,141 +1,88 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Central Park Control Console</title>
-    <style>
-        body {
-            background-color: #1a3a6c;
-            color: #d1d7e0;
-            font-family: 'Courier New', Courier, monospace;
-            margin: 0;
-            padding: 30px;
-            overflow-x: hidden;
-            font-size: 1.4rem;
-            font-weight: bold;
-        }
-
-        #terminal {
-            width: 100%;
-        }
-
-        .input-line {
-            display: flex;
-            align-items: center;
-            width: 100%;
-        }
-
-        input {
-            background: transparent;
-            border: none;
-            color: #d1d7e0;
-            font-family: inherit;
-            font-size: inherit;
-            font-weight: inherit;
-            outline: none;
-            flex-grow: 1;
-            margin-left: 10px;
-        }
-
-        #nedry-window {
-            display: none;
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 320px;
-            background: #c0c0c0;
-            border: 3px solid #ffffff;
-            border-right: 3px solid #444;
-            border-bottom: 3px solid #444;
-            padding: 4px;
-            z-index: 1000;
-            color: black;
-        }
-
-        .title-bar { background: #000080; color: white; padding: 2px 8px; font-size: 14px; }
-        .alert-text { background: red; color: white; text-align: center; padding: 5px; animation: blink 0.2s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
-
-        #bucle-area { margin-top: 20px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jurassic Park Security System</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div id="terminal">
-        <div>Jurassic Park, System Security Interface</div>
-        <div>Version 4.0.5, Alpha E</div>
-        <div>Ready...</div>
-        <div id="log"></div>
-        
-        <div class="input-line" id="prompt-line">
-            <span>></span>
-            <input type="text" id="terminal-input" autofocus spellcheck="false">
-        </div>
+<audio id="audio-magic" src="magic_word.mp3" preload="auto"></audio>
+
+<!-- PANTALLA 1: EXECUTE -->
+<div id="screen-execute">
+  <div class="jp-logo">JURASSIC PARK — SYSTEM SECURITY INTERFACE<br>Version 4.0.5, Alpha E</div>
+  <div class="execute-wrapper">
+    <div class="clear-badge">CLEAR</div>
+    <div class="debug-label">— Debug Island Overview —</div>
+    <button class="execute-btn" onclick="showStopwatch()">EXECUTE ?</button>
+  </div>
+</div>
+
+<!-- PANTALLA 2: STOPWATCH -->
+<div id="screen-stopwatch">
+  <div class="sw-window">
+    <div class="sw-titlebar">
+      <span>StopWatch</span>
+      <span class="sw-close"></span>
     </div>
-
-    <div id="nedry-window">
-        <div class="title-bar">Security System Error</div>
-        <img src="nedry.gif" style="width:100%; border:2px solid black;">
-        <div class="alert-text">YOU DIDN'T SAY THE MAGIC WORD!</div>
+    <div class="sw-body">
+      <div class="sw-display" id="sw-display">00:00:10.0</div>
+      <button class="sw-btn" id="go-btn" onclick="startCountdown()">Go ⌘G</button>
+      <button class="sw-btn" onclick="resetStopwatch()">Reset ⌘R</button>
+      <div></div>
+      <button class="sw-btn" onclick="stopCountdown()">Stop ⌘S</button>
     </div>
+  </div>
+</div>
 
-    <div id="bucle-area"></div>
+<!-- PANTALLA 3: FALLOS -->
+<div id="screen-failed">
+  <div class="failed-title">⚠ SECURITY SYSTEM FAILURE ⚠</div>
+  <div class="failed-gif-box">
+    <img src="execute.gif" alt="Execute">
+  </div>
+  <div class="glitch-list">
+    <span class="failed-label">FAILED</span> Quadrant: qp #1 Gallimimus Paddock<br>
+    <span class="failed-label">FAILED</span> Quadrant: qp #2 Reserve Paddock<br>
+    <span class="failed-label">FAILED</span> Quadrant: qp #3 Reserve Paddock<br>
+    <span class="clear-label">CLEAR</span>&nbsp; Quadrant: qp #4 Brachiosaurus Paddock<br>
+    <span class="clear-label">CLEAR</span>&nbsp; Quadrant: qp #5 Triceratops Paddock<br>
+    <span class="clear-label">CLEAR</span>&nbsp; Quadrant: qp #6 Tyrannosaurus Paddock
+  </div>
+  <button class="code-btn" onclick="showTerminal()">[ CODIGO ]</button>
+</div>
 
-    <audio id="audioNedry" src="magic_word.mp3" loop></audio>
+<!-- PANTALLA 4: TERMINAL -->
+<div id="screen-terminal">
+  <div class="terminal-header">
+    Jurassic Park, System Security Interface<br>
+    Version 4.0.5, Alpha E<br>
+    Ready...
+  </div>
+  <div id="terminal-log" class="terminal-log"></div>
+  <div class="terminal-prompt">
+    <span>&gt;</span>
+    <input type="text" id="terminal-input"
+           placeholder="escribe el codigo de acceso..."
+           autocomplete="off"
+           onkeydown="checkCode(event)">
+  </div>
+</div>
 
-    <script>
-        const input = document.getElementById('terminal-input');
-        const log = document.getElementById('log');
-        const bucleArea = document.getElementById('bucle-area');
-        const ventanaNedry = document.getElementById('nedry-window');
-        const audio = document.getElementById('audioNedry');
-        const promptLine = document.getElementById('prompt-line');
+<!-- PANTALLA 5: NEDRY -->
+<div id="screen-nedry">
+  <div class="magic-flood" id="magic-flood"></div>
+  <div class="nedry-popup">
+    <div class="nedry-popup-title">Security System Error</div>
+    <div class="nedry-popup-body">
+      <img src="nedry.gif" alt="Nedry">
+    </div>
+    <div class="nedry-popup-footer">YOU DIDN'T SAY THE<br>MAGIC WORD!</div>
+  </div>
+</div>
 
-        let errores = 0;
-
-        input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                const val = input.value.toLowerCase();
-                log.innerHTML += `<div>> ${input.value}</div>`;
-                
-                if (val.includes("access") && !val.includes("please")) {
-                    errores++;
-                    if (errores >= 3) {
-                        iniciarVirus();
-                    } else {
-                        log.innerHTML += `<div>access: PERMISSION DENIED.</div>`;
-                    }
-                } else if (val.includes("please")) {
-                    alert("ACCESS GRANTED");
-                }
-
-                input.value = ""; 
-                window.scrollTo(0, document.body.scrollHeight);
-            }
-        });
-
-        function iniciarVirus() {
-            promptLine.style.display = 'none'; 
-            ventanaNedry.style.display = 'block';
-            audio.play();
-
-            let contador = 0;
-            const limite = 500; // AHORA SON 500
-
-            const intervalo = setInterval(() => {
-                if (contador < limite) {
-                    const div = document.createElement('div');
-                    div.textContent = "YOU DIDN'T SAY THE MAGIC WORD!";
-                    bucleArea.appendChild(div);
-                    contador++;
-                    
-                    // Esto hace que la pantalla baje automáticamente con el texto
-                    window.scrollTo(0, document.body.scrollHeight);
-                } else {
-                    clearInterval(intervalo);
-                }
-            }, 30); // Velocidad aumentada para procesar las 500 líneas
-        }
-    </script>
+<script src="script.js"></script>
 </body>
 </html>
